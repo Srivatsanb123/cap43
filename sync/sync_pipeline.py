@@ -37,8 +37,8 @@ MYSQL_DB = os.getenv("MYSQL_DB", "cap43")
 
 # AWS S3 Staging Configuration
 CSV_OUTPUT_DIR = os.getenv("CSV_OUTPUT_DIR", os.path.join(os.path.dirname(__file__), "output_csv"))
-AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET", "cap43-staging-srivatsan-363518")
-AWS_REGION = os.getenv("AWS_REGION", "ap-south-1")
+AWS_S3_BUCKET = os.getenv("AWS_S3_BUCKET", "propledger")
+AWS_REGION = os.getenv("AWS_REGION", "ap-south-2")
 
 # Outbox & Delta Extraction Configuration per Table
 TABLE_CONFIG = {

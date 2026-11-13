@@ -22,7 +22,7 @@ public class S3EvidenceStorage implements EvidenceStorage {
     public S3EvidenceStorage(@Value("${app.evidence.s3.bucket:propledger}") String bucket,
             @Value("${app.evidence.s3.region:ap-south-2}") String region) {
         this.bucket = (bucket != null) ? bucket.trim() : "";
-        String reg = (region != null && !region.isBlank()) ? region.trim() : "ap-south-1";
+        String reg = (region != null && !region.isBlank()) ? region.trim() : "ap-south-2";
         S3Client client = null;
         try {
             client = S3Client.builder().region(Region.of(reg)).build();
