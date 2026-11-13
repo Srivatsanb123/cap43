@@ -1,0 +1,42 @@
+# Environment configuration (secrets)
+**/.env
+**/.env.*
+!.env.example
+
+# Java & Maven
+**/target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+backend/evidence-store/
+*.class
+
+# Node & Frontend
+**/node_modules/
+**/dist/
+**/dist-ssr/
+*.local
+
+# Python & S3 Sync
+**/venv/
+**/__pycache__/
+*.py[cod]
+*$py.class
+sync/output_csv/
+
+# Logs & OS artifacts
+*.log
+.DS_Store
+Thumbs.db
+~$*
+*Updated.docx
+
+# IDE & Editor files
+.idea/
+.vscode/
+*.iml
+*.ipr
+*.iws
+.project
+.classpath
+.settings/

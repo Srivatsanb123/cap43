@@ -1,0 +1,15 @@
+{
+  "Rules": [
+    {
+      "ID": "AutoCleanStagingCSVs",
+      "Status": "Enabled",
+      "Filter": {
+        "Prefix": "cap43_staging/"
+      },
+      "Expiration": {
+        "Days": 7
+      }
+    }
+  ]
+}
+
