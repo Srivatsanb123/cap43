@@ -22,28 +22,25 @@ public class SyncTriggerService {
 
     private final AuditService audit;
 
-    @Value("${app.sync.python-path:python}")
+    @Value("${app.sync.python-path:python3}")
     private String pythonPath;
 
     @Value("${app.sync.script-path:sync/sync_pipeline.py}")
     private String scriptPath;
 
     public SyncTriggerResponse triggerSync(AuthUser admin, String ip) {
-        log.info("S3 Data Sync triggered by user {} from {}", admin.userId(), ip);
+        log.info("S3 Data Sync triggered by user {} from {}", admin != null ? admin.userId() : "anonymous", ip);
         long start = System.currentTimeMillis();
 
-        File pythonExe = new File(pythonPath);
-        if (!pythonExe.exists()) {
-            pythonPath = "python";
-        }
-
-        File scriptFile = new File(scriptPath);
-        if (!scriptFile.exists()) {
+        File scriptFile = resolveScriptFile(scriptPath);
+        if (scriptFile == null || !scriptFile.exists()) {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Sync script not found at " + scriptPath);
         }
 
+        String pythonExe = resolvePythonExecutable(pythonPath);
+
         try {
-            ProcessBuilder pb = new ProcessBuilder(pythonPath, scriptPath);
+            ProcessBuilder pb = new ProcessBuilder(pythonExe, scriptFile.getAbsolutePath());
             pb.directory(scriptFile.getParentFile());
             pb.redirectErrorStream(true);
 
@@ -63,21 +60,74 @@ public class SyncTriggerService {
             details.put("exitCode", exitCode);
             details.put("output", output.toString());
 
+            Integer adminId = admin != null ? admin.userId() : 1;
+
             if (exitCode != 0) {
                 log.error("S3 Sync script failed with code {}: {}", exitCode, output);
-                audit.log(admin.userId(), "S3_SYNC_FAILED", "SYNC", "PIPELINE", "Exit code: " + exitCode, ip);
+                audit.log(adminId, "S3_SYNC_FAILED", "SYNC", "PIPELINE", "Exit code: " + exitCode, ip);
                 return new SyncTriggerResponse("FAILED", "S3 sync execution failed: " + output, duration, details);
             }
 
             log.info("S3 Sync pipeline executed successfully in {} ms", duration);
-            audit.log(admin.userId(), "S3_SYNC_SUCCESS", "SYNC", "PIPELINE", "Duration: " + duration + "ms", ip);
+            audit.log(adminId, "S3_SYNC_SUCCESS", "SYNC", "PIPELINE", "Duration: " + duration + "ms", ip);
             return new SyncTriggerResponse("SUCCESS", "S3 sync pipeline completed successfully. Delta CSVs staged to S3 for automated Snowpipe ingestion into Snowflake.", duration, details);
 
         } catch (Exception e) {
             log.error("Error executing S3 Sync script", e);
-            audit.log(admin.userId(), "S3_SYNC_ERROR", "SYNC", "PIPELINE", e.getMessage(), ip);
+            Integer adminId = admin != null ? admin.userId() : 1;
+            audit.log(adminId, "S3_SYNC_ERROR", "SYNC", "PIPELINE", e.getMessage(), ip);
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "S3 sync execution failed: " + e.getMessage());
         }
     }
-}
 
+    private File resolveScriptFile(String path) {
+        File file = new File(path);
+        if (file.exists()) {
+            return file;
+        }
+        File relativeParent = new File("..", path);
+        if (relativeParent.exists()) {
+            return relativeParent;
+        }
+        File inSync = new File("sync", "sync_pipeline.py");
+        if (inSync.exists()) {
+            return inSync;
+        }
+        File parentSync = new File("../sync", "sync_pipeline.py");
+        if (parentSync.exists()) {
+            return parentSync;
+        }
+        return file;
+    }
+
+    private String resolvePythonExecutable(String path) {
+        if (path == null || path.isBlank()) {
+            return "python3";
+        }
+        File file = new File(path);
+        if (file.exists()) {
+            return file.getAbsolutePath();
+        }
+        File relativeParent = new File("..", path);
+        if (relativeParent.exists()) {
+            return relativeParent.getAbsolutePath();
+        }
+        File syncVenvLinux = new File("sync/venv/bin/python");
+        if (syncVenvLinux.exists()) {
+            return syncVenvLinux.getAbsolutePath();
+        }
+        File parentVenvLinux = new File("../sync/venv/bin/python");
+        if (parentVenvLinux.exists()) {
+            return parentVenvLinux.getAbsolutePath();
+        }
+        File syncVenvWin = new File("sync/venv/Scripts/python.exe");
+        if (syncVenvWin.exists()) {
+            return syncVenvWin.getAbsolutePath();
+        }
+        File parentVenvWin = new File("../sync/venv/Scripts/python.exe");
+        if (parentVenvWin.exists()) {
+            return parentVenvWin.getAbsolutePath();
+        }
+        return path;
+    }
+}
