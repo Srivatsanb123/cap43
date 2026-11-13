@@ -1,8 +1,4 @@
 services:
-  # ----------------------------------------------------------------------------
-  # 1. MySQL 8 Database Service
-  # Initialized with root:root credentials and automatic schema/seed execution
-  # ----------------------------------------------------------------------------
   mysql:
     image: mysql:8.0
     container_name: cap43-mysql
@@ -25,10 +21,6 @@ services:
     networks:
       - cap43-net
 
-  # ----------------------------------------------------------------------------
-  # 2. Spring Boot Backend Service (REST API)
-  # Connects to MySQL container with root credentials and port 8080
-  # ----------------------------------------------------------------------------
   backend:
     build:
       context: ./backend
@@ -40,32 +32,11 @@ services:
         condition: service_healthy
     env_file:
       - ./backend/.env
-    environment:
-      SERVER_PORT: 8080
-      MYSQL_HOST: mysql
-      MYSQL_PORT: 3306
-      MYSQL_DB: cap43
-      MYSQL_USER: root
-      MYSQL_PASSWORD: root
-      CORS_ALLOWED_ORIGINS: "*"
-      APP_DEMO_ENABLED: "true"
-      APP_DEMO_PASSWORD: "Demo@12345"
-      APP_EVIDENCE_MODE: "local"
-      JWT_SECRET: "c2VjdXJlLWNhcDQzLXByb3BlcnR5LW1haW50ZW5hbmNlLWRlcG9zaXQtZGlzcHV0ZS1sZWRnZXItc2VjcmV0LWtleS0yMDI2"
-      JWT_TTL_MINUTES: "60"
-      AWS_S3_BUCKET: ""
-      AWS_REGION: ""
-      PYTHON_PATH: "python"
-      SYNC_SCRIPT_PATH: ""
     ports:
       - "8080:8080"
     networks:
       - cap43-net
 
-  # ----------------------------------------------------------------------------
-  # 3. React Frontend Service (Nginx)
-  # Serves compiled SPA and proxies /api requests to backend container
-  # ----------------------------------------------------------------------------
   frontend:
     build:
       context: ./frontend
@@ -86,4 +57,3 @@ volumes:
 networks:
   cap43-net:
     driver: bridge
-
