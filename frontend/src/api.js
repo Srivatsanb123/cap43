@@ -34,10 +34,12 @@ async function request(path, options = {}) {
   });
 
   if (!res.ok) {
-    if (res.status === 401 || res.status === 403) {
-      
+    if (
+      (res.status === 401 || res.status === 403) &&
+      !path.startsWith("/api/auth/login") &&
+      !path.startsWith("/api/auth/register")
+    ) {
       setAuth(null, null);
-      
       window.dispatchEvent(new CustomEvent("cap43_auth_required"));
     }
 
@@ -47,7 +49,6 @@ async function request(path, options = {}) {
       if (body.message) msg = body.message;
       else if (body.error) msg = `${body.error}: ${body.message || res.statusText}`;
     } catch {
-      
     }
     throw new Error(msg);
   }
@@ -56,15 +57,19 @@ async function request(path, options = {}) {
   return res.json();
 }
 
-
 export const login = (email, password) =>
   request("/api/auth/login", {
     method: "POST",
     body: JSON.stringify({ email, password }),
   });
 
-export const getMe = () => request("/api/auth/me");
+export const register = (data) =>
+  request("/api/auth/register", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 
+export const getMe = () => request("/api/auth/me");
 
 export const getTenantIssues = () => request("/api/tenant/issues");
 export const getTenantIssue = (id) => request(`/api/tenant/issues/${id}`);
@@ -80,14 +85,12 @@ export const contestDisputeItem = (disputeId, itemId, data) =>
     body: JSON.stringify(data),
   });
 
-
 export const getVendorWorkOrders = () => request("/api/vendor/work-orders");
 export const updateVendorWorkOrder = (id, data) =>
   request(`/api/vendor/work-orders/${id}/updates`, {
     method: "POST",
     body: JSON.stringify(data),
   });
-
 
 export const getDashboardSummary = () => request("/api/admin/dashboard/summary");
 export const getEscalations = () => request("/api/admin/escalations");
@@ -111,7 +114,6 @@ export const unmaskTenant = (tenantId, reason) =>
     body: JSON.stringify({ reason }),
   });
 
-
 export const getAdminIssues = (params = {}) => {
   const query = new URLSearchParams();
   if (params.status) query.set("status", params.status);
@@ -126,14 +128,12 @@ export const changeIssueSeverity = (id, data) =>
 export const assignVendor = (id, data) =>
   request(`/api/admin/issues/${id}/work-orders`, { method: "POST", body: JSON.stringify(data) });
 
-
 export const getLeaseInspections = (leaseId) => request(`/api/admin/leases/${leaseId}/inspections`);
 export const getInspection = (id) => request(`/api/admin/inspections/${id}`);
 export const createInspection = (leaseId, data) =>
   request(`/api/admin/leases/${leaseId}/inspections`, { method: "POST", body: JSON.stringify(data) });
 export const addInspectionItem = (inspectionId, data) =>
   request(`/api/admin/inspections/${inspectionId}/items`, { method: "POST", body: JSON.stringify(data) });
-
 
 export const getRepairCosts = (params = {}) => {
   const query = new URLSearchParams();
@@ -147,7 +147,6 @@ export const createRepairCost = (data) =>
   request("/api/admin/repair-costs", { method: "POST", body: JSON.stringify(data) });
 export const reverseRepairCost = (id, data) =>
   request(`/api/admin/repair-costs/${id}/reverse`, { method: "POST", body: JSON.stringify(data) });
-
 
 export const getAdminDisputes = (status) =>
   request(`/api/admin/disputes${status ? `?status=${status}` : ""}`);
@@ -168,7 +167,6 @@ export const resolveReviewQueueItem = (id, data) =>
   });
 export const getWearDamageRules = () => request("/api/admin/disputes/rules/wear-damage");
 export const getSeverityRules = () => request("/api/admin/rules/severity");
-
 
 export const triggerS3Sync = () =>
   request("/api/admin/sync/run", { method: "POST" });

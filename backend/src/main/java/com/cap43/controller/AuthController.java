@@ -3,6 +3,7 @@ package com.cap43.controller;
 import com.cap43.dto.LoginRequest;
 import com.cap43.dto.LoginResponse;
 import com.cap43.dto.MeResponse;
+import com.cap43.dto.RegisterRequest;
 import com.cap43.security.AuthUser;
 import com.cap43.service.AuthService;
 import jakarta.servlet.http.HttpServletRequest;
@@ -21,6 +22,11 @@ public class AuthController {
     @PostMapping("/login")
     public LoginResponse login(@Valid @RequestBody LoginRequest req, HttpServletRequest http) {
         return service.login(req, http.getRemoteAddr());
+    }
+
+    @PostMapping("/register")
+    public LoginResponse register(@Valid @RequestBody RegisterRequest req, HttpServletRequest http) {
+        return service.register(req, http.getRemoteAddr());
     }
 
     @GetMapping("/me")

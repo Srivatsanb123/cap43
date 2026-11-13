@@ -48,13 +48,14 @@ export default function App() {
     <>
       <nav className="nav">
         <div className="nav-brand">
-          <span style={{ color: "#4dabf7" }}>🏢 CAP-43</span>
-          <span style={{ fontSize: "0.85rem", fontWeight: 400, color: "#adb5bd" }}>
-            Maintenance & Deposit Ledger
+          <span className="brand-logo">🏢 PropLedger</span>
+          <span className="brand-divider">|</span>
+          <span className="brand-tagline">
+            Maintenance & Dispute Ledger
           </span>
         </div>
 
-        {user && (
+        {user ? (
           <div className="nav-links">
             {role === "ADMIN" && (
               <>
@@ -74,16 +75,24 @@ export default function App() {
             )}
 
             <div className="user-badge">
-              <span>👤 {user.fullName} ({role})</span>
-              <button className="btn-logout" onClick={handleLogout}>Sign Out</button>
+              <span className="user-avatar">👤</span>
+              <span className="user-name">{user.fullName}</span>
+              <span className={`role-pill role-${role ? role.toLowerCase() : "user"}`}>{role}</span>
+              <button className="btn-logout" onClick={handleLogout} title="Sign Out">Sign Out</button>
             </div>
+          </div>
+        ) : (
+          <div className="nav-links">
+            <NavLink to="/login" end>Sign In</NavLink>
+            <NavLink to="/register">Create Account</NavLink>
           </div>
         )}
       </nav>
 
       <main className="container">
         <Routes>
-          <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} />} />
+          <Route path="/login" element={<Login onLoginSuccess={handleLoginSuccess} initialMode="login" />} />
+          <Route path="/register" element={<Login onLoginSuccess={handleLoginSuccess} initialMode="register" />} />
 
           <Route
             path="/admin"

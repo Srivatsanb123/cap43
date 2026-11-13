@@ -30,16 +30,16 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http, JwtService jwtService) throws Exception {
         http
-            .csrf(csrf -> csrf.disable())   
+            .csrf(csrf -> csrf.disable())
             .cors(Customizer.withDefaults())
             .sessionManagement(s -> s.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/health", "/api/auth/login", "/error").permitAll()
+                .requestMatchers("/api/health", "/api/auth/login", "/api/auth/register", "/error").permitAll()
                 .requestMatchers("/api/auth/me").authenticated()
                 .requestMatchers("/api/tenant/**").hasRole("TENANT")
                 .requestMatchers("/api/vendor/**").hasRole("VENDOR")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .anyRequest().denyAll())     
+                .anyRequest().denyAll())
             .exceptionHandling(e -> e
                 .authenticationEntryPoint((req, res, ex) ->
                     writeError(res, 401, "Unauthorized", "Authentication required"))
